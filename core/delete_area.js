@@ -21,9 +21,10 @@ goog.require('Blockly.IDeleteArea');
 /**
  * Abstract class for a component that can delete a block or bubble that is
  * dropped on top of it.
- * @extends {Blockly.DragTarget}
+ * @extends {Blockly.DragTarget<T>}
  * @implements {Blockly.IDeleteArea}
  * @constructor
+ * @template T
  */
 Blockly.DeleteArea = function() {
   Blockly.DeleteArea.superClass_.constructor.call(this);

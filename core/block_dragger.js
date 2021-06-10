@@ -61,7 +61,7 @@ Blockly.BlockDragger = function(block, workspace) {
 
   /**
    * Which drag area the mouse pointer is over, if any.
-   * @type {?Blockly.IDragTarget}
+   * @type {?Blockly.IDragTarget<Blockly.BlockSvg>}
    * @private
    */
   this.dragTarget_ = null;
@@ -247,7 +247,7 @@ Blockly.BlockDragger.prototype.endBlockDrag = function(e, currentDragDeltaXY) {
   this.draggingBlock_.moveOffDragSurface(newLoc);
 
   if (this.dragTarget_) {
-    this.dragTarget_.onBlockDrop(this.draggingBlock_);
+    this.dragTarget_.onDrop(this.draggingBlock_);
   }
 
   if (this.wouldDeleteBlock_) {

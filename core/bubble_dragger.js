@@ -52,7 +52,7 @@ Blockly.BubbleDragger = function(bubble, workspace) {
 
   /**
    * Which drag target the mouse pointer is over, if any.
-   * @type {?Blockly.IDragTarget}
+   * @type {?Blockly.IDragTarget<Blockly.IBubble>}
    * @private
    */
   this.dragTarget_ = null;
@@ -202,7 +202,7 @@ Blockly.BubbleDragger.prototype.endBubbleDrag = function(
   this.draggingBubble_.moveTo(newLoc.x, newLoc.y);
 
   if (this.dragTarget_) {
-    this.dragTarget_.onBubbleDrop(this.draggingBubble_);
+    this.dragTarget_.onDrop(this.draggingBubble_);
   }
 
   if (this.wouldDeleteBubble_) {

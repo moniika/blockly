@@ -549,24 +549,13 @@ Blockly.Trashcan.prototype.onDragExit = function(_dragElement) {
   this.setLidOpen(false);
 };
 
-
-/**
- * Handles when a block is dropped on this component. Should not handle delete
- * here.
- * @param {!Blockly.BlockSvg} _block The block.
- * @override
- */
-Blockly.Trashcan.prototype.onBlockDrop = function(_block) {
-  this.onDrop_();
-};
-
 /**
  * Handles when a bubble is dropped on this component. Should not handle delete
  * here.
  * @param {!Blockly.IBubble} _bubble The bubble.
  * @override
  */
-Blockly.Trashcan.prototype.onBubbleDrop = function(_bubble) {
+Blockly.Trashcan.prototype.onDrop = function(_bubble) {
   this.onDrop_();
 };
 

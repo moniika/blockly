@@ -16,8 +16,6 @@ goog.provide('Blockly.DragTarget');
 
 goog.require('Blockly.IDragTarget');
 
-goog.requireType('Blockly.BlockSvg');
-goog.requireType('Blockly.IBubble');
 goog.requireType('Blockly.utils.Rect');
 
 
@@ -26,6 +24,7 @@ goog.requireType('Blockly.utils.Rect');
  * is dragged over or dropped on top of it.
  * @implements {Blockly.IDragTarget}
  * @constructor
+ * @template T
  */
 Blockly.DragTarget = function() {};
 
@@ -39,8 +38,7 @@ Blockly.DragTarget.prototype.getClientRect;
 
 /**
  * Handles when a cursor with a block or bubble enters this drag target.
- * @param {!Blockly.BlockSvg|!Blockly.IBubble} _dragElement The block or bubble
- *     currently being dragged.
+ * @param {!T} _dragElement The block or bubble currently being dragged.
  */
 Blockly.DragTarget.prototype.onDragEnter = function(_dragElement) {
   // no-op
@@ -48,27 +46,17 @@ Blockly.DragTarget.prototype.onDragEnter = function(_dragElement) {
 
 /**
  * Handles when a cursor with a block or bubble exits this drag target.
- * @param {!Blockly.BlockSvg|!Blockly.IBubble} _dragElement The block or bubble
- *     currently being dragged.
+ * @param {!T} _dragElement The block or bubble currently being dragged.
  */
 Blockly.DragTarget.prototype.onDragExit = function(_dragElement) {
   // no-op
 };
 
 /**
- * Handles when a block is dropped on this component. Should not handle delete
- * here.
- * @param {!Blockly.BlockSvg} _block The block.
+ * Handles when a block or bubble is dropped on this component. Should not
+ *     handle delete here.
+ * @param {!T} _block The block or bubble currently dropped.
  */
-Blockly.DragTarget.prototype.onBlockDrop = function(_block) {
-  // no-op
-};
-
-/**
- * Handles when a bubble is dropped on this component. Should not handle delete
- * here.
- * @param {!Blockly.IBubble} _bubble The bubble.
- */
-Blockly.DragTarget.prototype.onBubbleDrop = function(_bubble) {
+Blockly.DragTarget.prototype.onDrop = function(_block) {
   // no-op
 };
