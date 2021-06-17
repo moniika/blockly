@@ -108,6 +108,15 @@ Blockly.Bubble = function(
   this.positionBubble_();
   this.renderArrow_();
   this.rendered_ = true;
+
+  /**
+   * Whether to move the bubble to the drag surface when it is dragged.
+   * True if it should move, false if it should be translated directly.
+   * @type {boolean}
+   * @private
+   */
+  this.useDragSurface_ =
+      Blockly.utils.is3dSupported() && !!workspace.getBlockDragSurface();
 };
 
 /**
@@ -933,4 +942,46 @@ Blockly.Bubble.createNonEditableBubble = function(
     }
   }
   return bubble;
+};
+
+/**
+ * Move this block to its workspace's drag surface, accounting for positioning.
+ * Generally should be called at the same time as setDragging_(true).
+ * Does nothing if useDragSurface_ is false.
+ * @package
+ */
+Blockly.Bubble.prototype.moveToDragSurface = function() {
+  if (!this.useDragSurface_) {
+    return;
+  }
+  // The translation for drag surface blocks,
+  // is equal to the current relative-to-surface position,
+  // to keep the position in sync as it move on/off the surface.
+  // This is in workspace coordinates.
+  var xy = this.getRelativeToSurfaceXY();
+  this.clearTransformAttributes_();
+  this.workspace.getBlockDragSurface().translateSurface(xy.x, xy.y);
+  // Execute the move on the top-level SVG component
+  var svg = this.getSvgRoot();
+  if (svg) {
+    this.workspace.getBlockDragSurface().setBlocksAndShow(svg);
+  }
+};
+
+/**
+ * Move the bubble onto the drag surface at the beginning of a drag.  Move the
+ * drag surface to preserve the apparent location of the bubble.
+ * @private
+ */
+Blockly.Bubble.prototype.moveToDragSurface_ = function() {
+  if (!this.useDragSurface_) {
+    return;
+  }
+  this.moveTo(0, 0);
+
+  var xy = this.getRelativeToSurfaceXY();
+
+  this.dragSurface_.translateSurface(this.startXY_.x, this.startXY_.y);
+  // Execute the move on the top-level SVG component.
+  this.dragSurface_.setBlocksAndShow(this.draggingItem_.getSvgRoot());
 };

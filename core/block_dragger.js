@@ -40,12 +40,13 @@ goog.requireType('Blockly.WorkspaceSvg');
  * @implements {Blockly.IBlockDragger}
  */
 Blockly.BlockDragger = function(block, workspace) {
+  Blockly.BlockDragger.superClass_.constructor.call(this, block, workspace);
   /**
    * The top block in the stack that is being dragged.
    * @type {!Blockly.BlockSvg}
    * @protected
    */
-  this.draggingBlock_ = block;
+  this.draggingItem_ = block;
 
   /**
    * The workspace on which the block is being dragged.
@@ -60,7 +61,7 @@ Blockly.BlockDragger = function(block, workspace) {
    * @protected
    */
   this.draggedConnectionManager_ =
-      new Blockly.InsertionMarkerManager(this.draggingBlock_);
+      new Blockly.InsertionMarkerManager(this.draggingItem_);
 
   /**
    * Which drag area the mouse pointer is over, if any.
@@ -74,7 +75,7 @@ Blockly.BlockDragger = function(block, workspace) {
    * @type {boolean}
    * @protected
    */
-  this.wouldDeleteBlock_ = false;
+  this.wouldDeleteItem_ = false;
 
   /**
    * The location of the top left corner of the dragging block at the beginning
@@ -82,7 +83,7 @@ Blockly.BlockDragger = function(block, workspace) {
    * @type {!Blockly.utils.Coordinate}
    * @protected
    */
-  this.startXY_ = this.draggingBlock_.getRelativeToSurfaceXY();
+  this.startXY_ = this.draggingItem_.getRelativeToSurfaceXY();
 
   /**
    * A list of all of the icons (comment, warning, and mutator) that are
@@ -93,12 +94,14 @@ Blockly.BlockDragger = function(block, workspace) {
    */
   this.dragIconData_ = Blockly.BlockDragger.initIconData_(block);
 };
+Blockly.utils.object.inherits(Blockly.BlockDragger, Blockly.Dragger);
 
 /**
  * Sever all links from this object.
  * @package
  */
 Blockly.BlockDragger.prototype.dispose = function() {
+  Blockly.BlockDragger.superClass_.dispose.call(this);
   this.dragIconData_.length = 0;
 
   if (this.draggedConnectionManager_) {
@@ -147,6 +150,7 @@ Blockly.BlockDragger.prototype.startDrag = function(
   if (!Blockly.Events.getGroup()) {
     Blockly.Events.setGroup(true);
   }
+
   this.fireDragStartEvent_();
 
   // Mutators don't have the same type of z-ordering as the normal workspace
@@ -154,7 +158,7 @@ Blockly.BlockDragger.prototype.startDrag = function(
   // For performance reasons that usually happens at the end of a drag,
   // but do it at the beginning for mutators.
   if (this.workspace_.isMutator) {
-    this.draggingBlock_.bringToFront();
+    this.draggingItem_.bringToFront();
   }
 
   // During a drag there may be a lot of rerenders, but not field changes.
@@ -166,11 +170,13 @@ Blockly.BlockDragger.prototype.startDrag = function(
   if (this.shouldDisconnect_(healStack)) {
     this.disconnectBlock_(healStack, currentDragDeltaXY);
   }
-  this.draggingBlock_.setDragging(true);
+
+
+  this.draggingItem_.setDragging(true);
   // For future consideration: we may be able to put moveToDragSurface inside
   // the block dragger, which would also let the block not track the block drag
   // surface.
-  this.draggingBlock_.moveToDragSurface();
+  this.draggingItem_.moveToDragSurface();
 };
 
 /**
@@ -182,9 +188,9 @@ Blockly.BlockDragger.prototype.startDrag = function(
  */
 Blockly.BlockDragger.prototype.shouldDisconnect_ = function(healStack) {
   return !!(
-    this.draggingBlock_.getParent() ||
-      (healStack && this.draggingBlock_.nextConnection &&
-       this.draggingBlock_.nextConnection.targetBlock()));
+    this.draggingItem_.getParent() ||
+      (healStack && this.draggingItem_.nextConnection &&
+       this.draggingItem_.nextConnection.targetBlock()));
 };
 
 /**
@@ -197,12 +203,12 @@ Blockly.BlockDragger.prototype.shouldDisconnect_ = function(healStack) {
  */
 Blockly.BlockDragger.prototype.disconnectBlock_ = function(
     healStack, currentDragDeltaXY) {
-  this.draggingBlock_.unplug(healStack);
+  this.draggingItem_.unplug(healStack);
   var delta = this.pixelsToWorkspaceUnits_(currentDragDeltaXY);
   var newLoc = Blockly.utils.Coordinate.sum(this.startXY_, delta);
 
-  this.draggingBlock_.translate(newLoc.x, newLoc.y);
-  Blockly.blockAnimations.disconnectUiEffect(this.draggingBlock_);
+  this.draggingItem_.translate(newLoc.x, newLoc.y);
+  Blockly.blockAnimations.disconnectUiEffect(this.draggingItem_);
   this.draggedConnectionManager_.updateAvailableConnections();
 };
 
@@ -212,7 +218,7 @@ Blockly.BlockDragger.prototype.disconnectBlock_ = function(
  */
 Blockly.BlockDragger.prototype.fireDragStartEvent_ = function() {
   var event = new (Blockly.Events.get(Blockly.Events.BLOCK_DRAG))(
-      this.draggingBlock_, true, this.draggingBlock_.getDescendants(false));
+      this.draggingItem_, true, this.draggingItem_.getDescendants(false));
   Blockly.Events.fire(event);
 };
 
@@ -227,7 +233,7 @@ Blockly.BlockDragger.prototype.fireDragStartEvent_ = function() {
 Blockly.BlockDragger.prototype.drag = function(e, currentDragDeltaXY) {
   var delta = this.pixelsToWorkspaceUnits_(currentDragDeltaXY);
   var newLoc = Blockly.utils.Coordinate.sum(this.startXY_, delta);
-  this.draggingBlock_.moveDuringDrag(newLoc);
+  this.draggingItem_.moveDuringDrag(newLoc);
   this.dragIcons_(delta);
 
   var oldDragTarget = this.dragTarget_;
@@ -244,10 +250,10 @@ Blockly.BlockDragger.prototype.drag = function(e, currentDragDeltaXY) {
   // Call drag enter/exit/over after wouldDeleteBlock is called in
   // InsertionMarkerManager.update.
   if (this.dragTarget_ !== oldDragTarget) {
-    oldDragTarget && oldDragTarget.onDragExit(this.draggingBlock_);
-    this.dragTarget_ && this.dragTarget_.onDragEnter(this.draggingBlock_);
+    oldDragTarget && oldDragTarget.onDragExit(this.draggingItem_);
+    this.dragTarget_ && this.dragTarget_.onDragEnter(this.draggingItem_);
   }
-  this.dragTarget_ && this.dragTarget_.onDragOver(this.draggingBlock_);
+  this.dragTarget_ && this.dragTarget_.onDragOver(this.draggingItem_);
 };
 
 /**
@@ -268,7 +274,7 @@ Blockly.BlockDragger.prototype.endDrag = function(e, currentDragDeltaXY) {
   Blockly.blockAnimations.disconnectUiStop();
 
   var preventMove = !!this.dragTarget_ &&
-      this.dragTarget_.shouldPreventMove(this.draggingBlock_);
+      this.dragTarget_.shouldPreventMove(this.draggingItem_);
   if (preventMove) {
     var newLoc = this.startXY_;
   } else {
@@ -276,25 +282,25 @@ Blockly.BlockDragger.prototype.endDrag = function(e, currentDragDeltaXY) {
     var delta = newValues.delta;
     var newLoc = newValues.newLocation;
   }
-  this.draggingBlock_.moveOffDragSurface(newLoc);
+  this.draggingItem_.moveOffDragSurface(newLoc);
 
   if (this.dragTarget_) {
-    this.dragTarget_.onDrop(this.draggingBlock_);
+    this.dragTarget_.onDrop(this.draggingItem_);
   }
 
   var deleted = this.maybeDeleteBlock_();
   if (!deleted) {
     // These are expensive and don't need to be done if we're deleting.
-    this.draggingBlock_.setDragging(false);
+    this.draggingItem_.setDragging(false);
     if (delta) {  // !preventMove
       this.updateBlockAfterMove_(delta);
     } else {
       // Blocks dragged directly from a flyout may need to be bumped into
       // bounds.
       Blockly.bumpObjectIntoBounds_(
-          this.draggingBlock_.workspace,
+          this.draggingItem_.workspace,
           this.workspace_.getMetricsManager().getScrollMetrics(true),
-          this.draggingBlock_);
+          this.draggingItem_);
     }
   }
   this.workspace_.setResizesEnabled(true);
@@ -332,7 +338,7 @@ Blockly.BlockDragger.prototype.maybeDeleteBlock_ = function() {
   if (this.wouldDeleteBlock_) {
     // Fire a move event, so we know where to go back to for an undo.
     this.fireMoveEvent_();
-    this.draggingBlock_.dispose(false, true);
+    this.draggingItem_.dispose(false, true);
     Blockly.draggingConnections = [];
     return true;
   }
@@ -346,15 +352,15 @@ Blockly.BlockDragger.prototype.maybeDeleteBlock_ = function() {
  * @protected
  */
 Blockly.BlockDragger.prototype.updateBlockAfterMove_ = function(delta) {
-  this.draggingBlock_.moveConnections(delta.x, delta.y);
+  this.draggingItem_.moveConnections(delta.x, delta.y);
   this.fireMoveEvent_();
   if (this.draggedConnectionManager_.wouldConnectBlock()) {
     // Applying connections also rerenders the relevant blocks.
     this.draggedConnectionManager_.applyConnections();
   } else {
-    this.draggingBlock_.render();
+    this.draggingItem_.render();
   }
-  this.draggingBlock_.scheduleSnapAndBump();
+  this.draggingItem_.scheduleSnapAndBump();
 };
 
 /**
@@ -363,7 +369,7 @@ Blockly.BlockDragger.prototype.updateBlockAfterMove_ = function(delta) {
  */
 Blockly.BlockDragger.prototype.fireDragEndEvent_ = function() {
   var event = new (Blockly.Events.get(Blockly.Events.BLOCK_DRAG))(
-      this.draggingBlock_, false, this.draggingBlock_.getDescendants(false));
+      this.draggingItem_, false, this.draggingItem_.getDescendants(false));
   Blockly.Events.fire(event);
 };
 
@@ -378,7 +384,7 @@ Blockly.BlockDragger.prototype.updateToolboxStyle_ = function(isEnd) {
   var toolbox = this.workspace_.getToolbox();
 
   if (toolbox) {
-    var style = this.draggingBlock_.isDeletable() ? 'blocklyToolboxDelete' :
+    var style = this.draggingItem_.isDeletable() ? 'blocklyToolboxDelete' :
                                                     'blocklyToolboxGrab';
 
     if (isEnd && typeof toolbox.removeStyle == 'function') {
@@ -396,7 +402,7 @@ Blockly.BlockDragger.prototype.updateToolboxStyle_ = function(isEnd) {
  */
 Blockly.BlockDragger.prototype.fireMoveEvent_ = function() {
   var event =
-      new (Blockly.Events.get(Blockly.Events.BLOCK_MOVE))(this.draggingBlock_);
+      new (Blockly.Events.get(Blockly.Events.BLOCK_MOVE))(this.draggingItem_);
   event.oldCoordinate = this.startXY_;
   event.recordNew();
   Blockly.Events.fire(event);
@@ -408,7 +414,7 @@ Blockly.BlockDragger.prototype.fireMoveEvent_ = function() {
  * @protected
  */
 Blockly.BlockDragger.prototype.updateCursorDuringBlockDrag_ = function() {
-  this.draggingBlock_.setDeleteStyle(this.wouldDeleteBlock_);
+  this.draggingItem_.setDeleteStyle(this.wouldDeleteBlock_);
 };
 
 /**

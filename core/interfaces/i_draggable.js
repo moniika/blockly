@@ -22,3 +22,19 @@ goog.require('Blockly.IDeletable');
  * @interface
  */
 Blockly.IDraggable = function() {};
+
+/**
+ * Return the coordinates of the top-left corner of this object
+ * the drawing surface's origin (0,0), in workspace units.
+ * @return {!Blockly.utils.Coordinate} Object with .x and .y properties in
+ *     workspace coordinates.
+ * @package
+ */
+Blockly.IDraggable.prototype.getRelativeToSurfaceXY;
+
+/**
+ * Triggers a move callback if one exists at the end of a drag.
+ * @param {boolean} adding True if adding, false if removing.
+ * @package
+ */
+Blockly.IDraggable.prototype.setDragging;
