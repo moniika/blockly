@@ -80,7 +80,7 @@ goog.addDependency('../../core/interfaces/i_bounded_element.js', ['Blockly.IBoun
 goog.addDependency('../../core/interfaces/i_bubble.js', ['Blockly.IBubble'], ['Blockly.IContextMenu', 'Blockly.IDraggable']);
 goog.addDependency('../../core/interfaces/i_component.js', ['Blockly.IComponent'], []);
 goog.addDependency('../../core/interfaces/i_connection_checker.js', ['Blockly.IConnectionChecker'], []);
-goog.addDependency('../../core/interfaces/i_contextmenu.js', ['Blockly.IContextMenu'], []);
+goog.addDependency('../../core/interfaces/i_contextmenu.js', ['Blockly.IContextMenu'], [], {'lang': 'es6', 'module': 'goog'});
 goog.addDependency('../../core/interfaces/i_copyable.js', ['Blockly.ICopyable'], []);
 goog.addDependency('../../core/interfaces/i_deletable.js', ['Blockly.IDeletable'], []);
 goog.addDependency('../../core/interfaces/i_delete_area.js', ['Blockly.IDeleteArea'], ['Blockly.IDragTarget']);
