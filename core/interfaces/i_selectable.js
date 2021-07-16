@@ -14,14 +14,14 @@
 goog.module('Blockly.ISelectable');
 goog.module.declareLegacyNamespace();
 
-goog.requireType('Blockly.IDeletable');
-goog.requireType('Blockly.IMovable');
+const IDeletable = goog.require('Blockly.IDeletable');
+const IMovable = goog.require('Blockly.IMovable');
 
 
 /**
  * The interface for an object that is selectable.
- * @extends {Blockly.IDeletable}
- * @extends {Blockly.IMovable}
+ * @extends {IDeletable}
+ * @extends {IMovable}
  * @interface
  */
 const ISelectable = function() {};
@@ -32,13 +32,13 @@ const ISelectable = function() {};
 ISelectable.prototype.id;
 
 /**
- * Select this.  Highlight it visually.
+ * Select this. Highlight it visually.
  * @return {void}
  */
 ISelectable.prototype.select;
 
 /**
- * Unselect this.  Unhighlight it visually.
+ * Unselect this. Unhighlight it visually.
  * @return {void}
  */
 ISelectable.prototype.unselect;
